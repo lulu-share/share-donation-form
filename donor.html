@@ -634,14 +634,13 @@
       </div>
  
       <div class="field-group">
-        <label>Willing to deliver your furniture? <span class="req">*</span></label>
-        <div class="toggle-group">
-         <button type="button" class="toggle-btn" data-field="deliveryOption" data-val="client_delivery">Can Deliver to Client</button>
-         <button type="button" class="toggle-btn" data-field="deliveryOption" data-val="storage_delivery">Can Deliver to Storage</button>
-         <button type="button" class="toggle-btn" data-field="deliveryOption" data-val="pickup_needed">Need Pickup</button>
-        </div>
-        <div class="field-error" id="err-deliverArlington">Please select one</div>
-      </div>
+        <label>Willing to Deliver? <span class="req">*</span></label>
+<div class="toggle-group">
+  <button type="button" class="toggle-btn" data-field="deliveryOption" data-val="client_delivery">Yes, deliver to client</button>
+  <button type="button" class="toggle-btn" data-field="deliveryOption" data-val="storage_delivery">Yes, deliver to SHARE</button>
+  <button type="button" class="toggle-btn" data-field="deliveryOption" data-val="pickup_needed">Need Pickup</button>
+</div>
+<div class="field-error" id="err-deliveryOption">Please select one</div>
  
       <div class="field-group">
         <label>Pet and smoke-free environment? <span class="req">*</span></label>
@@ -802,7 +801,7 @@
  
   var items = [];
   var editingIndex = null;
-  var toggleValues = { deliverArlington: null, petSmokeFree: null };
+  var toggleValues = { deliveryOption: null, petSmokeFree: null };
   var currentPhotoFile = null;
   var currentPhotoDataUrl = null;
  
@@ -878,7 +877,7 @@
       email.classList.add('error');
       document.getElementById('err-email').style.display = 'block'; ok = false;
     }
-    ['deliverArlington','petSmokeFree'].forEach(function(field) {
+    ['deliveryOption','petSmokeFree'].forEach(function(field) {
       var err = document.getElementById('err-' + field);
       if (!toggleValues[field]) {
         document.querySelectorAll('[data-field="' + field + '"]').forEach(function(b) { b.classList.add('error-toggle'); });
@@ -1078,10 +1077,17 @@
       reviewRow('Email', document.getElementById('email').value) +
       reviewRow('Phone', document.getElementById('phone').value) +
       reviewRow('Address', donorAddress) +
-      reviewRow('Deliver to Arlington?', toggleValues.deliverArlington) +
+      reviewRow('Delivery option', formatDeliveryOption(toggleValues.deliveryOption)) +
       reviewRow('Pet & smoke-free?', toggleValues.petSmokeFree) +
       (document.getElementById('notes').value ? reviewRow('Notes', document.getElementById('notes').value) : '') +
       '</div>';
+
+   function formatDeliveryOption(value) {
+  if (value === 'client_delivery') return 'Deliver to client';
+  if (value === 'storage_delivery') return 'Deliver to SHARE';
+  if (value === 'pickup_needed') return 'Need pickup';
+  return '';
+}
  
     html += '<div style="font-size:12px;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);margin-bottom:10px;font-weight:500;">' + items.length + ' Item' + (items.length > 1 ? 's' : '') + '</div>';
     items.forEach(function(item, i) {
@@ -1119,7 +1125,8 @@
       apt:              document.getElementById('apt').value.trim(),
       city:             document.getElementById('city').value.trim(),
       zip:              document.getElementById('zip').value.trim(),
-      deliverArlington: toggleValues.deliverArlington,
+      deliveryOption: toggleValues.deliveryOption,
+      deliverArlington: toggleValues.deliveryOption === 'client_delivery' ? 'Yes' : 'No',
       petSmokeFree:     toggleValues.petSmokeFree,
       notes:            document.getElementById('notes').value.trim(),
       terms:            'I Understand'
