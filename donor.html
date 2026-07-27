@@ -657,14 +657,6 @@
         <label>Notes <span class="opt">(optional)</span></label>
         <textarea id="notes" placeholder="Anything helpful for our pickup team..."></textarea>
       </div>
- 
-      <div class="field-group">
-        <label class="checkbox-label">
-          <input type="checkbox" id="terms">
-          I understand and agree to Share's donation terms and conditions.
-        </label>
-        <div class="field-error" id="err-terms">You must agree to continue</div>
-      </div>
     </div>
  
     <button class="submit-btn" onclick="goToStep2()">Continue to Items →</button>
@@ -687,7 +679,19 @@
       </button>
       <div class="field-error" id="err-items" style="display:none; margin-top:10px;">Please add at least one item</div>
     </div>
- 
+
+    <div class="section-card">
+      <div class="section-title">Please agree to the terms below.</div>
+      <p style="color:var(--muted); font-size:14px; line-height:1.6; margin-bottom:16px;">Furniture must be suitable for small apartments. Items must be clean, free of pet hair, and undamaged. Mattresses should generally be less than 10 years old or rarely used. Our general standard is 'Would you give it to a family member?' SHARE reserves the right to refuse any item not suitable for our clients.</p>
+      <div class="field-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="terms">
+          I understand and agree to Share's donation terms and conditions.
+        </label>
+        <div class="field-error" id="err-terms">You must agree to continue</div>
+      </div>
+    </div>
+
     <div style="display:flex; gap:12px;">
       <button class="submit-btn" style="background:#EEECEA; color:var(--text); flex:1;" onclick="goToStep1()">← Back</button>
       <button class="submit-btn" style="flex:2;" onclick="goToStep3()">Review Submission →</button>
@@ -850,11 +854,17 @@
   }
   function goToStep1() { setStep(1); }
   function goToStep3() {
+    var ok = true;
     if (items.length === 0) {
       document.getElementById('err-items').style.display = 'block';
-      return;
+      ok = false;
+    } else {
+      document.getElementById('err-items').style.display = 'none';
     }
-    document.getElementById('err-items').style.display = 'none';
+    if (!document.getElementById('terms').checked) {
+      document.getElementById('err-terms').style.display = 'block'; ok = false;
+    } else { document.getElementById('err-terms').style.display = 'none'; }
+    if (!ok) return;
     buildReview();
     setStep(3);
   }
@@ -886,9 +896,6 @@
         err.style.display = 'block'; ok = false;
       } else { err.style.display = 'none'; }
     });
-    if (!document.getElementById('terms').checked) {
-      document.getElementById('err-terms').style.display = 'block'; ok = false;
-    } else { document.getElementById('err-terms').style.display = 'none'; }
     return ok;
   }
  
