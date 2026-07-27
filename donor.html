@@ -83,6 +83,7 @@
     flex-direction: column;
     align-items: center;
     gap: 6px;
+    cursor: pointer;
   }
   .dot {
     width: 28px;
@@ -558,17 +559,17 @@
  
 <div class="progress-wrap">
   <div class="progress-steps">
-    <div class="step-dot active" id="step1dot">
+    <div class="step-dot active" id="step1dot" onclick="jumpToStep(1)">
       <div class="dot active" id="dot1">1</div>
       <span class="step-label">Your info</span>
     </div>
     <div class="step-line" id="line1"></div>
-    <div class="step-dot" id="step2dot">
+    <div class="step-dot" id="step2dot" onclick="jumpToStep(2)">
       <div class="dot" id="dot2">2</div>
       <span class="step-label">Items</span>
     </div>
     <div class="step-line" id="line2"></div>
-    <div class="step-dot" id="step3dot">
+    <div class="step-dot" id="step3dot" onclick="jumpToStep(3)">
       <div class="dot" id="dot3">3</div>
       <span class="step-label">Review</span>
     </div>
@@ -848,27 +849,17 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
  
-  function goToStep2() {
-    if (!validateStep1()) return;
-    setStep(2);
-  }
+  function goToStep2() { setStep(2); }
   function goToStep1() { setStep(1); }
-  function goToStep3() {
-    var ok = true;
-    if (items.length === 0) {
-      document.getElementById('err-items').style.display = 'block';
-      ok = false;
-    } else {
-      document.getElementById('err-items').style.display = 'none';
-    }
-    if (!document.getElementById('terms').checked) {
-      document.getElementById('err-terms').style.display = 'block'; ok = false;
-    } else { document.getElementById('err-terms').style.display = 'none'; }
-    if (!ok) return;
-    buildReview();
-    setStep(3);
-  }
+  function goToStep3() { buildReview(); setStep(3); }
   function goToStep2FromReview() { setStep(2); }
+
+  // Lets users freely jump between steps without completing prior ones;
+  // full validation only runs at final submission.
+  function jumpToStep(n) {
+    if (n === 3) buildReview();
+    setStep(n);
+  }
  
   // ── Validation ──
   function validateStep1() {
@@ -898,7 +889,21 @@
     });
     return ok;
   }
- 
+
+  function validateStep2() {
+    var ok = true;
+    if (items.length === 0) {
+      document.getElementById('err-items').style.display = 'block';
+      ok = false;
+    } else {
+      document.getElementById('err-items').style.display = 'none';
+    }
+    if (!document.getElementById('terms').checked) {
+      document.getElementById('err-terms').style.display = 'block'; ok = false;
+    } else { document.getElementById('err-terms').style.display = 'none'; }
+    return ok;
+  }
+
   // ── Modal ──
   function openModal(editIdx) {
     editingIndex = editIdx !== undefined ? editIdx : null;
@@ -1121,10 +1126,17 @@
  
   // ── Submit ──
   function submitForm() {
+    var step1ok = validateStep1();
+    var step2ok = validateStep2();
+    if (!step1ok || !step2ok) {
+      jumpToStep(step1ok ? 2 : 1);
+      return;
+    }
+
     var btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>Submitting...';
- 
+
     var donorData = {
       firstName:        document.getElementById('firstName').value.trim(),
       lastName:         document.getElementById('lastName').value.trim(),
