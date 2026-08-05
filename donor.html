@@ -808,6 +808,7 @@
  
   var items = [];
   var editingIndex = null;
+  var submissionId = null;
   var toggleValues = { deliveryOption: null, petSmokeFree: null };
   var currentPhotoFile = null;
   var currentPhotoDataUrl = null;
@@ -1125,6 +1126,29 @@
   }
  
   // ── Submit ──
+  function generateId() {
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  }
+
+  // Retries a couple times before giving up, since the Apps Script endpoint
+  // occasionally fails on Google's side even when the row was written.
+  // Reuses the same idempotencyKey across attempts so a retry can't create
+  // a duplicate donation once the backend checks for it.
+  function submitWithRetry(payload, attemptsLeft) {
+    return fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) })
+      .then(function(r) { return r.json(); })
+      .catch(function() { return null; })
+      .then(function(data) {
+        if (data && data.status === 'ok') return data;
+        if (attemptsLeft > 1) {
+          return new Promise(function(resolve) { setTimeout(resolve, 1200); })
+            .then(function() { return submitWithRetry(payload, attemptsLeft - 1); });
+        }
+        return data;
+      });
+  }
+
   function submitForm() {
     var step1ok = validateStep1();
     var step2ok = validateStep2();
@@ -1163,27 +1187,18 @@
       };
     });
  
-    var payload = { donor: donorData, items: itemsData };
- 
-    fetch(SCRIPT_URL, {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.status === 'ok') {
+    if (!submissionId) submissionId = generateId();
+    var payload = { donor: donorData, items: itemsData, idempotencyKey: submissionId };
+
+    submitWithRetry(payload, 3).then(function(data) {
+      if (data && data.status === 'ok') {
         document.getElementById('mainForm').style.display = 'none';
         document.getElementById('successScreen').style.display = 'block';
       } else {
-        alert('Something went wrong: ' + (data.message || 'unknown error'));
+        alert("We couldn't confirm your donation went through. It may have already been received — please contact Share if you don't hear back, or try submitting again.");
         btn.disabled = false;
         btn.innerHTML = 'Submit Donation';
       }
-    })
-    .catch(function(err) {
-      alert('Submission failed. Please check your connection and try again.');
-      btn.disabled = false;
-      btn.innerHTML = 'Submit Donation';
     });
   }
 </script>
