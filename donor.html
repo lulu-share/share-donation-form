@@ -771,8 +771,9 @@
       </div>
  
       <div class="field-group">
-        <label>Description <span class="opt">(optional)</span></label>
+        <label>Description <span class="req">*</span></label>
         <textarea id="modalDesc" placeholder="Condition, dimensions, color, any damage..."></textarea>
+        <div class="field-error" id="err-modalDesc">Please add a description</div>
       </div>
  
       <div class="field-group">
@@ -926,7 +927,7 @@
       currentPhotoFile = null; currentPhotoDataUrl = null;
       hideFilePreview();
     }
-    ['modalType','modalQty'].forEach(function(id) {
+    ['modalType','modalQty','modalDesc'].forEach(function(id) {
       document.getElementById(id).classList.remove('error');
       document.getElementById('err-' + id).style.display = 'none';
     });
@@ -947,6 +948,7 @@
   function saveItem() {
     var type = document.getElementById('modalType').value;
     var qty  = document.getElementById('modalQty').value.trim();
+    var desc = document.getElementById('modalDesc').value.trim();
     var ok   = true;
     if (!type) {
       document.getElementById('modalType').classList.add('error');
@@ -962,12 +964,19 @@
       document.getElementById('modalQty').classList.remove('error');
       document.getElementById('err-modalQty').style.display = 'none';
     }
+    if (!desc) {
+      document.getElementById('modalDesc').classList.add('error');
+      document.getElementById('err-modalDesc').style.display = 'block'; ok = false;
+    } else {
+      document.getElementById('modalDesc').classList.remove('error');
+      document.getElementById('err-modalDesc').style.display = 'none';
+    }
     if (!ok) return;
- 
+
     var item = {
       type: type,
       qty: qty,
-      desc: document.getElementById('modalDesc').value.trim(),
+      desc: desc,
       photoFile: currentPhotoFile,
       photoDataUrl: currentPhotoDataUrl,
       photoName: currentPhotoFile ? currentPhotoFile.name : null
