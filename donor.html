@@ -763,15 +763,18 @@
         </select>
         <div class="field-error" id="err-modalType">Please select a furniture type</div>
       </div>
- 
+
       <div class="field-group">
         <label>Quantity <span class="req">*</span></label>
         <input type="text" id="modalQty" placeholder="e.g. 1">
         <div class="field-error" id="err-modalQty">Please enter a quantity</div>
       </div>
- 
+
       <div class="field-group">
         <label>Description <span class="req">*</span></label>
+        <div id="typeDescOtherNote" style="display:none; background:#EEECEA; border-radius:8px; padding:10px 12px; margin-bottom:8px; font-size:12.5px; line-height:1.5; color:var(--muted);">
+          If you're donating multiple different items, please create a separate "Other" entry for each one — for example, a blender, tableware, and a bunk bed should be 3 separate entries, not one entry describing all three.
+        </div>
         <div style="background:#EEECEA; border-radius:8px; padding:12px 14px; margin-bottom:10px; font-size:12.5px; line-height:1.6; color:var(--muted);">
           <div style="color:var(--text); font-weight:500; margin-bottom:6px;">Please indicate the condition and dimensions (if applicable) of your item:</div>
           <div style="color:var(--text); font-weight:500; margin-top:8px;">Condition:</div>
@@ -784,6 +787,7 @@
           <div>• Dressers / Chest of Drawers: Height × Width × Depth + Weight</div>
           <div>• TV stands &amp; Coffee tables: Width × Depth</div>
           <div>• Mattresses: Weight (for full and queen) and Age</div>
+          <div>• Bedframes: Size (Full or Queen) and style</div>
         </div>
         <textarea id="modalDesc" placeholder="Condition, dimensions, color, any damage..."></textarea>
         <div class="field-error" id="err-modalDesc">Please add a description</div>
@@ -940,6 +944,7 @@
       currentPhotoFile = null; currentPhotoDataUrl = null;
       hideFilePreview();
     }
+    updateOtherNoteVisibility();
     ['modalType','modalQty','modalDesc'].forEach(function(id) {
       document.getElementById(id).classList.remove('error');
       document.getElementById('err-' + id).style.display = 'none';
@@ -947,6 +952,13 @@
     document.getElementById('modalOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
+
+  function updateOtherNoteVisibility() {
+    var type = document.getElementById('modalType').value;
+    document.getElementById('typeDescOtherNote').style.display = (type.indexOf('Other') === 0) ? 'block' : 'none';
+  }
+
+  document.getElementById('modalType').addEventListener('change', updateOtherNoteVisibility);
  
   function closeModal() {
     document.getElementById('modalOverlay').classList.remove('open');
